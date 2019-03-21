@@ -14,13 +14,41 @@ public class BrokerRepository {
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     public void insertMessage(String body) {
-        String sql = "INSERT INTO message (body, received) VALUES (:body, :received)";
+        String sql = "INSERT INTO message (body, received) " +
+                     "VALUES (:body, :received)";
 
         SqlParameterSource parameters = new MapSqlParameterSource()
                 .addValue("body", body)
                 .addValue("received", LocalDateTime.now());
 
         namedParameterJdbcTemplate.update(sql, parameters);
+    }
+
+    public MessageEntity getFirstUnprocessedMessage() {
+        String sql = "UPDATE message " +
+                     "SET processed = TRUE " +
+                     "WHERE  id = (" +
+                     "  SELECT id " +
+                     "  FROM   message " +
+                     "  WHERE  processed = FALSE " +
+                     "  ORDER BY id " +
+                     "  LIMIT  1 " +
+                     "  FOR UPDATE SKIP LOCKED" +
+                     ") " +
+                     "RETURNING message.*";
+
+        SqlParameterSource parameters = new MapSqlParameterSource();
+
+        return namedParameterJdbcTemplate.queryForObject(sql, parameters, (rs, rowNum) -> {
+            MessageEntity messageEntity = new MessageEntity();
+
+            messageEntity.setId(rs.getInt("id"));
+            messageEntity.setBody(rs.getString("body"));
+            messageEntity.setReceived(rs.getTimestamp("received").toLocalDateTime());
+            messageEntity.setProcessed(rs.getBoolean("processed"));
+
+            return messageEntity;
+        });
     }
 
 }
