@@ -16,7 +16,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.dao.EmptyResultDataAccessException;
-import dev.filiptanu.h4task.messagebroker.core.Message;
+import dev.filiptanu.h4task.messagebroker.core.ConsumerMessage;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BrokerServiceTest {
@@ -40,26 +40,33 @@ public class BrokerServiceTest {
         MessageEntity messageEntity = new MessageEntity();
         messageEntity.setId(1);
         messageEntity.setBody("{\"body\": \"Some message...\"}");
-        messageEntity.setReceived(LocalDateTime.now());
-        messageEntity.setProcessed(true);
+        messageEntity.setReceivedFromProducer(LocalDateTime.now());
+        messageEntity.setProcessingStatus(ProcessingStatus.NOT_PROCESSED);
 
-        when(brokerRepository.getFirstUnprocessedMessage()).thenReturn(messageEntity);
+        when(brokerRepository.getFirstUnprocessedMessage("1")).thenReturn(messageEntity);
 
-        Optional<Message> messageOptional = brokerService.consumeMessage();
+        Optional<ConsumerMessage> consumerMessageOptional = brokerService.consumeMessage("1");
 
-        assertTrue(messageOptional.isPresent());
-        assertEquals(messageEntity.toMessage(), messageOptional.get());
-        verify(brokerRepository, times(1)).getFirstUnprocessedMessage();
+        assertTrue(consumerMessageOptional.isPresent());
+        assertEquals(messageEntity.toConsumerMessage(), consumerMessageOptional.get());
+        verify(brokerRepository, times(1)).getFirstUnprocessedMessage("1");
     }
 
     @Test
     public void consumeMessage_repositoryThrowsException_shouldReturnEmptyOptional() {
-        when(brokerRepository.getFirstUnprocessedMessage()).thenThrow(EmptyResultDataAccessException.class);
+        when(brokerRepository.getFirstUnprocessedMessage("1")).thenThrow(EmptyResultDataAccessException.class);
 
-        Optional<Message> messageOptional = brokerService.consumeMessage();
+        Optional<ConsumerMessage> consumerMessageOptional = brokerService.consumeMessage("1");
 
-        assertFalse(messageOptional.isPresent());
-        verify(brokerRepository, times(1)).getFirstUnprocessedMessage();
+        assertFalse(consumerMessageOptional.isPresent());
+        verify(brokerRepository, times(1)).getFirstUnprocessedMessage("1");
+    }
+
+    @Test
+    public void confirmMessage() {
+        brokerRepository.confirmMessage(1, "1");
+
+        verify(brokerRepository, times(1)).confirmMessage(1, "1");
     }
 
 }

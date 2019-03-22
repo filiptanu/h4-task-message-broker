@@ -14,3 +14,5 @@ java -jar producer-1.0-SNAPSHOT.jar -Dproducer.id=2 -Dtime.interval.milliseconds
 java -jar consumer-1.0-SNAPSHOT.jar -consumer.id=1
 
 java -jar consumer-1.0-SNAPSHOT.jar -consumer.id=2 -Dtime.interval.milliseconds=3000
+
+java -jar consumer-1.0-SNAPSHOT.jar -consumer.id=3 -Dtime.interval.milliseconds=3000  -Dconfirm.messages=false

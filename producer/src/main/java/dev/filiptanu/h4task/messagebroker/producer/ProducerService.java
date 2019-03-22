@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import dev.filiptanu.h4task.messagebroker.core.Message;
+import dev.filiptanu.h4task.messagebroker.core.ProducerMessage;
 
 @Service
 public class ProducerService {
@@ -20,17 +20,17 @@ public class ProducerService {
 
     @Value("${producer.id}")
     private String producerId;
-    @Value("${broker.endpoint}")
-    private String brokerEndpoint;
+    @Value("${broker.produce.message.endpoint}")
+    private String brokerProduceMessageEndpoint;
 
     public void produceMessage() {
         logger.info("Producing a new message...");
-        Message message = new Message();
+        ProducerMessage producerMessage = new ProducerMessage();
         Random random = new Random();
-        message.setBody("Producer " + producerId + " - " + random.nextInt(10000));
+        producerMessage.setBody("Producer " + producerId + " - " + random.nextInt(10000));
 
-        logger.info("Sending message: " + message.toString());
-        ResponseEntity<Void> responseEntity = restTemplate.postForEntity(brokerEndpoint, message, Void.class);
+        logger.info("Sending message: " + producerMessage.toString());
+        ResponseEntity<Void> responseEntity = restTemplate.postForEntity(brokerProduceMessageEndpoint, producerMessage, Void.class);
 
         logger.info("Response code received from broker: " + responseEntity.getStatusCode().toString());
     }

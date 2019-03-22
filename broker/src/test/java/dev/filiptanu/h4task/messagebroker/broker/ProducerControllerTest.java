@@ -27,7 +27,7 @@ public class ProducerControllerTest {
     private BrokerService brokerService;
 
     @Test
-    public void receiveProducerMessage_validMessage_shouldReturnOk() throws Exception {
+    public void receiveProducerMessage_validProducerMessage_shouldReturnOk() throws Exception {
         mockMvc.perform(post("/receiveProducerMessage")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"body\": \"Some message...\"}"))
@@ -37,7 +37,7 @@ public class ProducerControllerTest {
     }
 
     @Test
-    public void receiveProducerMessage_invalidMessageNotJson_shouldReturnClientError() throws Exception {
+    public void receiveProducerMessage_invalidProducerMessageNotJson_shouldReturnClientError() throws Exception {
         mockMvc.perform(post("/receiveProducerMessage")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("Some message..."))
@@ -47,7 +47,7 @@ public class ProducerControllerTest {
     }
 
     @Test
-    public void receiveProducerMessage_invalidMessageNullBody_shouldReturnClientError() throws Exception {
+    public void receiveProducerMessage_invalidProducerMessageNullBody_shouldReturnClientError() throws Exception {
         mockMvc.perform(post("/receiveProducerMessage")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"body\": null}"))

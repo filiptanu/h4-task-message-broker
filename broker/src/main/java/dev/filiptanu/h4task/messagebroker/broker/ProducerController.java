@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import dev.filiptanu.h4task.messagebroker.core.Message;
+import dev.filiptanu.h4task.messagebroker.core.ProducerMessage;
 
 @RestController
 public class ProducerController {
@@ -20,14 +20,14 @@ public class ProducerController {
     private BrokerService brokerService;
 
     @PostMapping("/receiveProducerMessage")
-    @ResponseStatus(value = HttpStatus.OK)
-    public void receiveProducerMessage(@Valid @RequestBody Message message) {
+    @ResponseStatus(HttpStatus.OK)
+    public void receiveProducerMessage(@Valid @RequestBody ProducerMessage producerMessage) {
         // TODO (filip): Add custom response for HttpMessageNotReadableException
         // TODO (filip): Add custom response for MethodArgumentNotValidException
 
-        logger.info(message.toString());
+        logger.info(producerMessage.toString());
 
-        brokerService.processReceivedMessage(message.getBody());
+        brokerService.processReceivedMessage(producerMessage.getBody());
     }
 
 }

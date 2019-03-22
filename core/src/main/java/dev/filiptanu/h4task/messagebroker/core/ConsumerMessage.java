@@ -1,12 +1,11 @@
 package dev.filiptanu.h4task.messagebroker.core;
 
-import javax.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class ProducerMessage {
+public class ConsumerMessage {
 
-    @NotNull
+    private int messageId;
     private String body;
 
 }

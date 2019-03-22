@@ -4,9 +4,11 @@ import javax.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class ProducerMessage {
+public class ConfirmMessage {
 
     @NotNull
-    private String body;
+    private int messageId;
+    @NotNull
+    private String consumerId;
 
 }
