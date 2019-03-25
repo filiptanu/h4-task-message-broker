@@ -28,6 +28,7 @@ public class ProducerController {
         logger.info(producerMessage.toString());
 
         brokerService.processReceivedMessage(producerMessage.getBody());
+        brokerService.pushMessagesToConsumers();
     }
 
 }

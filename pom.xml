@@ -10,9 +10,10 @@
     <version>1.0-SNAPSHOT</version>
     <modules>
         <module>core</module>
+        <module>broker</module>
         <module>producer</module>
         <module>consumer-pull</module>
-        <module>broker</module>
+        <module>consumer-push</module>
     </modules>
 
     <properties>

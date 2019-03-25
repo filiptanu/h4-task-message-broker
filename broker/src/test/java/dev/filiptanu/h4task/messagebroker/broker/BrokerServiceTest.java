@@ -69,4 +69,10 @@ public class BrokerServiceTest {
         verify(brokerRepository, times(1)).confirmMessage(1, "1");
     }
 
+    // TODO (filip): Add unit tests for this method
+    @Test
+    public void pushMessageToConsumer() {
+
+    }
+
 }

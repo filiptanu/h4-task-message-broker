@@ -34,6 +34,7 @@ public class ProducerControllerTest {
                 .andExpect(status().is2xxSuccessful());
 
         verify(brokerService, times(1)).processReceivedMessage("Some message...");
+        verify(brokerService, times(1)).pushMessagesToConsumers();
     }
 
     @Test
@@ -44,6 +45,7 @@ public class ProducerControllerTest {
                 .andExpect(status().is4xxClientError());
 
         verify(brokerService, never()).processReceivedMessage(anyString());
+        verify(brokerService, never()).pushMessagesToConsumers();
     }
 
     @Test
@@ -54,6 +56,7 @@ public class ProducerControllerTest {
                 .andExpect(status().is4xxClientError());
 
         verify(brokerService, never()).processReceivedMessage(anyString());
+        verify(brokerService, never()).pushMessagesToConsumers();
     }
 
 }

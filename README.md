@@ -11,8 +11,14 @@ java -jar producer-1.0-SNAPSHOT.jar -Dproducer.id=1
 
 java -jar producer-1.0-SNAPSHOT.jar -Dproducer.id=2 -Dtime.interval.milliseconds=3000
 
-java -jar consumer-1.0-SNAPSHOT.jar -consumer.id=1
+java -jar consumer-pull-1.0-SNAPSHOT.jar -consumer.id=1
 
-java -jar consumer-1.0-SNAPSHOT.jar -consumer.id=2 -Dtime.interval.milliseconds=3000
+java -jar consumer-pull-1.0-SNAPSHOT.jar -consumer.id=2 -Dtime.interval.milliseconds=3000
 
-java -jar consumer-1.0-SNAPSHOT.jar -consumer.id=3 -Dtime.interval.milliseconds=3000  -Dconfirm.messages=false
+java -jar consumer-pull-1.0-SNAPSHOT.jar -consumer.id=3 -Dtime.interval.milliseconds=3000  -Dconfirm.messages=false
+
+java -jar consumer-push-1.0-SNAPSHOT.jar -Dconsumer.id=1
+
+java -jar consumer-push-1.0-SNAPSHOT.jar -Dserver.port=8082 -Dconsumer.id=2
+
+java -jar consumer-push-1.0-SNAPSHOT.jar -Dserver.port=8084 -Dconsumer.id=3 -Dconfirm.messages=false

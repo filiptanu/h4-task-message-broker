@@ -1,5 +1,6 @@
 package dev.filiptanu.h4task.messagebroker.broker;
 
+import java.util.List;
 import java.util.Optional;
 import javax.validation.Valid;
 import org.slf4j.Logger;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import dev.filiptanu.h4task.messagebroker.core.ConfirmMessage;
+import dev.filiptanu.h4task.messagebroker.core.SubscribeConsumerMessage;
 import dev.filiptanu.h4task.messagebroker.core.ConsumerMessage;
 
 @RestController
@@ -24,8 +26,12 @@ public class ConsumerController {
     @Autowired
     private BrokerService brokerService;
 
+    @Autowired
+    private List<SubscribeConsumerMessage> consumers;
+
     @GetMapping("/sendConsumerMessage")
     public ResponseEntity<ConsumerMessage> sendConsumerMessage(@RequestParam String consumerId) {
+        logger.info("Sending consumer message...");
         Optional<ConsumerMessage> messageOptional = brokerService.consumeMessage(consumerId);
 
         if (messageOptional.isPresent()) {
@@ -40,10 +46,21 @@ public class ConsumerController {
     @PostMapping("/confirmMessage")
     @ResponseStatus(HttpStatus.OK)
     public void confirmMessageReceived(@Valid @RequestBody ConfirmMessage consumerMessage) {
+        logger.info("Confirming message received...");
         logger.info(consumerMessage.toString());
         brokerService.confirmMessage(consumerMessage.getMessageId(), consumerMessage.getConsumerId());
     }
 
-    // TODO (filip): Try implementing a push-based message delivery
+    @PostMapping("/subscribe")
+    public void subscribeConsumer(@Valid @RequestBody SubscribeConsumerMessage subscribeConsumerMessage) {
+        logger.info("New consumer subscribed...");
+        logger.info(subscribeConsumerMessage.toString());
+
+        consumers.add(subscribeConsumerMessage);
+        brokerService.pushMessagesToConsumers();
+
+        // TODO (filip): Check if any messages are still not processed and send them to the registerConsumerMessages in a round robin fashion
+        // TODO (filip): Add an interval to check if the consumer is still up, remove it from the consumers list if it is not
+    }
 
 }
