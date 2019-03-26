@@ -9,6 +9,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.net.ConnectException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import dev.filiptanu.h4task.messagebroker.core.ConsumerMessage;
 import dev.filiptanu.h4task.messagebroker.core.SubscribeConsumerMessage;
@@ -144,6 +146,34 @@ public class BrokerServiceTest {
         when(brokerRepository.getFirstUnprocessedMessage("1")).thenThrow(EmptyResultDataAccessException.class);
 
         brokerService.pushMessageToConsumer();
+    }
+
+    @Test
+    public void pushMessageToConsumer_consumerConnectionRefused_shoudRemoveConsumer() {
+        SubscribeConsumerMessage subscribeConsumerMessage = new SubscribeConsumerMessage();
+        subscribeConsumerMessage.setConsumerId("1");
+        subscribeConsumerMessage.setHealthcheckEndpoint("http://localhost:8081/healthcheck");
+        subscribeConsumerMessage.setHealthcheckEndpoint("http://localhost:8081/pushConsumerMessage");
+
+        MessageEntity messageEntity = new MessageEntity();
+        messageEntity.setId(1);
+        messageEntity.setBody("Some message...");
+        messageEntity.setReceivedFromProducer(LocalDateTime.now());
+        messageEntity.setProcessingStatus(ProcessingStatus.NOT_PROCESSED);
+        messageEntity.setConsumerId("1");
+
+        when(consumers.size()).thenReturn(1);
+        when(consumers.get(anyInt())).thenReturn(subscribeConsumerMessage);
+        when(brokerRepository.getFirstUnprocessedMessage("1")).thenReturn(messageEntity);
+        when(restTemplate.postForEntity(subscribeConsumerMessage.getPushEndpoint(), messageEntity.toConsumerMessage(), Void.class)).thenThrow(RestClientException.class);
+
+        brokerService.pushMessageToConsumer();
+
+        verify(consumers, times(2)).size();
+        verify(consumers, times(1)).get(anyInt());
+        verify(brokerRepository, times(1)).getFirstUnprocessedMessage(anyString());
+        verify(restTemplate, times(1)).postForEntity(subscribeConsumerMessage.getPushEndpoint(), messageEntity.toConsumerMessage(), Void.class);
+        verify(consumers, times(1)).remove(subscribeConsumerMessage);
     }
 
 }

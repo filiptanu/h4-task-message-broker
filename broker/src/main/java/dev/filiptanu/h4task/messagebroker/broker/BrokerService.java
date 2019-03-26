@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import dev.filiptanu.h4task.messagebroker.core.ConsumerMessage;
 import dev.filiptanu.h4task.messagebroker.core.SubscribeConsumerMessage;
@@ -58,6 +59,7 @@ public class BrokerService {
                 pushMessageToConsumer();
             } catch (NoRegisteredConsumersException | NoMessagesPresentAtBrokerException e) {
                 logger.error(e.getMessage());
+
                 break;
             }
         }
@@ -73,10 +75,15 @@ public class BrokerService {
             logger.info("Consumer: " + subscribeConsumerMessage);
             logger.info("Message: " + consumerMessage);
 
-            restTemplate.postForEntity(subscribeConsumerMessage.getPushEndpoint(), consumerMessageOptional.get(), Void.class);
+            try {
+                restTemplate.postForEntity(subscribeConsumerMessage.getPushEndpoint(), consumerMessageOptional.get(), Void.class);
+            } catch (RestClientException e) {
+                logger.error("Communicating with the consumer with id + " + subscribeConsumerMessage.getConsumerId() + " failed: " + e.getMessage());
+
+                removeConsumer(subscribeConsumerMessage);
+            }
         } else {
             decrementConsumerIndex();
-
             throw new NoMessagesPresentAtBrokerException("No more messages currently present at the broker...");
         }
     }
@@ -92,14 +99,20 @@ public class BrokerService {
 
             nextConsumerIndex = (nextConsumerIndex + 1) % consumers.size();
 
+            logger.info("Next consumer index: " + nextConsumerIndex);
+
             return consumers.get(nextConsumerIndex);
         }
     }
 
     private void decrementConsumerIndex() {
-        logger.info("Decrementing next consumer index: ");
+        logger.info("Decrementing next consumer index...");
 
         nextConsumerIndex--;
+    }
+
+    private void removeConsumer(SubscribeConsumerMessage subscribeConsumerMessage) {
+        consumers.remove(subscribeConsumerMessage);
     }
 
 }

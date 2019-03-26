@@ -56,8 +56,6 @@ public class ConsumerController {
 
         brokerService.addConsumer(subscribeConsumerMessage);
         brokerService.pushMessagesToConsumers();
-
-        // TODO (filip): Add an interval to check if the consumer is still up, remove it from the consumers list if it is not
     }
 
 }
