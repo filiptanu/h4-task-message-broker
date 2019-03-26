@@ -1,6 +1,5 @@
 package dev.filiptanu.h4task.messagebroker.broker;
 
-import java.util.List;
 import java.util.Optional;
 import javax.validation.Valid;
 import org.slf4j.Logger;
@@ -26,12 +25,10 @@ public class ConsumerController {
     @Autowired
     private BrokerService brokerService;
 
-    @Autowired
-    private List<SubscribeConsumerMessage> consumers;
-
     @GetMapping("/sendConsumerMessage")
     public ResponseEntity<ConsumerMessage> sendConsumerMessage(@RequestParam String consumerId) {
         logger.info("Sending consumer message...");
+
         Optional<ConsumerMessage> messageOptional = brokerService.consumeMessage(consumerId);
 
         if (messageOptional.isPresent()) {
@@ -48,6 +45,7 @@ public class ConsumerController {
     public void confirmMessageReceived(@Valid @RequestBody ConfirmMessage consumerMessage) {
         logger.info("Confirming message received...");
         logger.info(consumerMessage.toString());
+
         brokerService.confirmMessage(consumerMessage.getMessageId(), consumerMessage.getConsumerId());
     }
 
@@ -56,10 +54,9 @@ public class ConsumerController {
         logger.info("New consumer subscribed...");
         logger.info(subscribeConsumerMessage.toString());
 
-        consumers.add(subscribeConsumerMessage);
+        brokerService.addConsumer(subscribeConsumerMessage);
         brokerService.pushMessagesToConsumers();
 
-        // TODO (filip): Check if any messages are still not processed and send them to the registerConsumerMessages in a round robin fashion
         // TODO (filip): Add an interval to check if the consumer is still up, remove it from the consumers list if it is not
     }
 

@@ -29,8 +29,6 @@ public class BrokerService {
 
     public void processReceivedMessage(String body) {
         brokerRepository.insertMessage(body);
-
-        // TODO (filip): if using push model, maybe notify the consumers that there is a new message
     }
 
     public Optional<ConsumerMessage> consumeMessage(String consumerId) {
@@ -47,6 +45,10 @@ public class BrokerService {
 
     public void clearPendingMessages() {
         brokerRepository.clearPendingMessages();
+    }
+
+    public void addConsumer(SubscribeConsumerMessage subscribeConsumerMessage) {
+        consumers.add(subscribeConsumerMessage);
     }
 
     public synchronized void pushMessagesToConsumers() {
@@ -82,26 +84,22 @@ public class BrokerService {
     private SubscribeConsumerMessage getNextConsumer() {
         logger.info("Getting next consumer index...");
 
-        logger.info("Consumers size: " + consumers.size());
+        synchronized (consumers) {
+            if (consumers.size() <= 0) {
+                nextConsumerIndex = -1;
+                throw new NoRegisteredConsumersException("There are no registered consumers to send messages to...");
+            }
 
-        if (consumers.size() <= 0) {
-            nextConsumerIndex = -1;
-            throw new NoRegisteredConsumersException("There are no registered consumers to send messages to...");
+            nextConsumerIndex = (nextConsumerIndex + 1) % consumers.size();
+
+            return consumers.get(nextConsumerIndex);
         }
-
-        logger.info("Next consumer index before: " + nextConsumerIndex);
-        nextConsumerIndex = (nextConsumerIndex + 1) % consumers.size();
-        logger.info("Next consumer index after: " + nextConsumerIndex);
-
-        return consumers.get(nextConsumerIndex);
     }
 
     private void decrementConsumerIndex() {
         logger.info("Decrementing next consumer index: ");
 
-        logger.info("Next consumer index before: " + nextConsumerIndex);
         nextConsumerIndex--;
-        logger.info("Next consumer index after: " + nextConsumerIndex);
     }
 
 }

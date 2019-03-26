@@ -13,7 +13,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.List;
 import java.util.Optional;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,9 +34,6 @@ public class ConsumerControllerTest {
 
     @MockBean
     private BrokerService brokerService;
-
-    @MockBean
-    private List<SubscribeConsumerMessage> consumers;
 
     @Test
     public void sendConsumerMessage_consumerIdPresent_shouldReturnMessage() throws Exception {
@@ -117,7 +113,7 @@ public class ConsumerControllerTest {
                 .content("{\"consumerId\": \"1\", \"healthcheckEndpoint\": \"http://localhost:8081/healthcheck\", \"pushEndpoint\": \"http://localhost:8081/pushConsumerMessage\"}"))
                 .andExpect(status().is2xxSuccessful());
 
-        verify(consumers, times(1)).add(any());
+        verify(brokerService, times(1)).addConsumer(any());
         verify(brokerService, times(1)).pushMessagesToConsumers();
     }
 
@@ -128,7 +124,7 @@ public class ConsumerControllerTest {
                 .content("Some message..."))
                 .andExpect(status().is4xxClientError());
 
-        verify(consumers, never()).add(any());
+        verify(brokerService, never()).addConsumer(any());
         verify(brokerService, never()).pushMessagesToConsumers();
     }
 
@@ -139,7 +135,7 @@ public class ConsumerControllerTest {
                 .content("{\"consumerId\": null, \"healthcheckEndpoint\": \"http://localhost:8081/healthcheck\", \"pushEndpoint\": \"http://localhost:8081/pushConsumerMessage\"}"))
                 .andExpect(status().is4xxClientError());
 
-        verify(consumers, never()).add(any());
+        verify(brokerService, never()).addConsumer(any());
         verify(brokerService, never()).pushMessagesToConsumers();
     }
 
@@ -150,7 +146,7 @@ public class ConsumerControllerTest {
                 .content("{\"consumerId\": \"1\", \"healthcheckEndpoint\": null, \"pushEndpoint\": \"http://localhost:8081/pushConsumerMessage\"}"))
                 .andExpect(status().is4xxClientError());
 
-        verify(consumers, never()).add(any());
+        verify(brokerService, never()).addConsumer(any());
         verify(brokerService, never()).pushMessagesToConsumers();
     }
 
@@ -161,7 +157,7 @@ public class ConsumerControllerTest {
                 .content("{\"consumerId\": \"1\", \"healthcheckEndpoint\": \"http://localhost:8081/healthcheck\", \"pushEndpoint\": null}"))
                 .andExpect(status().is4xxClientError());
 
-        verify(consumers, never()).add(any());
+        verify(brokerService, never()).addConsumer(any());
         verify(brokerService, never()).pushMessagesToConsumers();
     }
 
