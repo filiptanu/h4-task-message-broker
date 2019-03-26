@@ -3,14 +3,16 @@ package dev.filiptanu.h4task.messagebroker.broker;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.net.ConnectException;
 import java.time.LocalDateTime;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import org.junit.Test;
@@ -174,6 +176,31 @@ public class BrokerServiceTest {
         verify(brokerRepository, times(1)).getFirstUnprocessedMessage(anyString());
         verify(restTemplate, times(1)).postForEntity(subscribeConsumerMessage.getPushEndpoint(), messageEntity.toConsumerMessage(), Void.class);
         verify(consumers, times(1)).remove(subscribeConsumerMessage);
+    }
+
+    @Test
+    public void removeInactiveConsumers() {
+        SubscribeConsumerMessage subscribeConsumerMessage1 = new SubscribeConsumerMessage();
+        subscribeConsumerMessage1.setConsumerId("1");
+        subscribeConsumerMessage1.setHealthcheckEndpoint("http://localhost:8081/healthcheck");
+        subscribeConsumerMessage1.setHealthcheckEndpoint("http://localhost:8081/pushConsumerMessage");
+
+        SubscribeConsumerMessage subscribeConsumerMessage2 = new SubscribeConsumerMessage();
+        subscribeConsumerMessage2.setConsumerId("2");
+        subscribeConsumerMessage2.setHealthcheckEndpoint("http://localhost:8082/healthcheck");
+        subscribeConsumerMessage2.setHealthcheckEndpoint("http://localhost:8082/pushConsumerMessage");
+
+        Iterator<SubscribeConsumerMessage> mockIterator = mock(Iterator.class);
+
+        when(consumers.iterator()).thenReturn(mockIterator);
+        when(mockIterator.hasNext()).thenReturn(true, true, false);
+        when(mockIterator.next()).thenReturn(subscribeConsumerMessage1, subscribeConsumerMessage2);
+
+        brokerService.removeInactiveConsumers();
+
+        verify(consumers, times(1)).iterator();
+        verify(mockIterator, times(3)).hasNext();
+        verify(mockIterator, times(2)).next();
     }
 
 }

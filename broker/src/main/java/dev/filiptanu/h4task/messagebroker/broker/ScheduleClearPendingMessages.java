@@ -16,15 +16,17 @@ public class ScheduleTasksService {
 
     @Scheduled(fixedRateString = "${clear.pending.messages.time.interval.milliseconds}", initialDelayString = "${clear.pending.messages.time.interval.milliseconds}")
     public void clearPendingMessages() {
-        logger.info("Clearing messages with processing_status = \"PENDING\"...");
+        logger.info("ScheduleTasksService#clearPendingMessages()");
 
         brokerService.clearPendingMessages();
+        brokerService.pushMessagesToConsumers();
     }
 
-    // TODO (filip): Remove consumers that do not return 200 on the healthcheck
-//    @Scheduled
+    @Scheduled(fixedRateString = "${clear.inactive.consumers.time.interval.milliseconds}", initialDelayString = "${clear.inactive.consumers.time.interval.milliseconds}")
     public void removeInactiveConsumers() {
+        logger.info("ScheduleTasksService#removeInactiveConsumers()");
 
+        brokerService.removeInactiveConsumers();
     }
 
 }

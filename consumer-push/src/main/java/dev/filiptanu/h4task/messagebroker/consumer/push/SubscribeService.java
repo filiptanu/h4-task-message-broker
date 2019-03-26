@@ -47,7 +47,7 @@ public class SubscribeService {
 
         ResponseEntity<Void> confirmMessageResponseEntity = restTemplate.postForEntity(brokerSubscribeEndpoint, subscribeConsumerMessage, Void.class);
         if (confirmMessageResponseEntity.getStatusCode() == HttpStatus.OK) {
-            logger.info("Successfully registered at broker");
+            logger.info("Successfully registered at broker...");
         } else {
             logger.error("There was a problem with registering at the broker... Shutting down the consumer...");
         }

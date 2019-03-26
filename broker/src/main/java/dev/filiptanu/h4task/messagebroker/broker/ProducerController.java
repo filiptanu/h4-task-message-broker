@@ -22,7 +22,7 @@ public class ProducerController {
     @PostMapping("/receiveProducerMessage")
     @ResponseStatus(HttpStatus.OK)
     public void receiveProducerMessage(@Valid @RequestBody ProducerMessage producerMessage) {
-        logger.info("Received a message from a producer - " + producerMessage.toString());
+        logger.info("Received a message from a producer: " + producerMessage.toString());
 
         brokerService.processReceivedMessage(producerMessage.getBody());
         brokerService.pushMessagesToConsumers();

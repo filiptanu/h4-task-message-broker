@@ -7,6 +7,8 @@ docker run --name message-broker-postgres -e POSTGRES_USER=message-broker -e POS
 
 java -jar broker-1.0-SNAPSHOT.jar
 
+java -jar broker-1.0-SNAPSHOT.jar -Dclear.inactive.consumers.time.interval.milliseconds=60000
+
 java -jar producer-1.0-SNAPSHOT.jar -Dproducer.id=1
 
 java -jar producer-1.0-SNAPSHOT.jar -Dproducer.id=2 -Dtime.interval.milliseconds=3000
