@@ -22,10 +22,7 @@ public class ProducerController {
     @PostMapping("/receiveProducerMessage")
     @ResponseStatus(HttpStatus.OK)
     public void receiveProducerMessage(@Valid @RequestBody ProducerMessage producerMessage) {
-        // TODO (filip): Add custom response for HttpMessageNotReadableException
-        // TODO (filip): Add custom response for MethodArgumentNotValidException
-
-        logger.info(producerMessage.toString());
+        logger.info("Received a message from a producer - " + producerMessage.toString());
 
         brokerService.processReceivedMessage(producerMessage.getBody());
         brokerService.pushMessagesToConsumers();
