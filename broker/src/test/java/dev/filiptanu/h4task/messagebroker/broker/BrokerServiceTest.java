@@ -3,7 +3,6 @@ package dev.filiptanu.h4task.messagebroker.broker;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -11,6 +10,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.util.Iterator;
 import java.util.List;
@@ -104,7 +105,7 @@ public class BrokerServiceTest {
     }
 
     @Test
-    public void pushMessageToConsumer_consumerPresent_repositoryReturnsEntity_shouldPushMessage() {
+    public void pushMessageToConsumer_consumerPresent_repositoryReturnsEntity_shouldPushMessage() throws Throwable {
         SubscribeConsumerMessage subscribeConsumerMessage = new SubscribeConsumerMessage();
         subscribeConsumerMessage.setConsumerId("1");
         subscribeConsumerMessage.setHealthcheckEndpoint("http://localhost:8081/healthcheck");
@@ -121,7 +122,13 @@ public class BrokerServiceTest {
         when(consumers.get(anyInt())).thenReturn(subscribeConsumerMessage);
         when(brokerRepository.getFirstUnprocessedMessage("1")).thenReturn(messageEntity);
 
-        brokerService.pushMessageToConsumer();
+        Method method = BrokerService.class.getDeclaredMethod("pushMessageToConsumer");
+        method.setAccessible(true);
+        try {
+            method.invoke(brokerService);
+        } catch (InvocationTargetException ite) {
+            throw ite.getCause();
+        }
 
         verify(consumers, times(2)).size();
         verify(consumers, times(1)).get(anyInt());
@@ -130,14 +137,22 @@ public class BrokerServiceTest {
     }
 
     @Test(expected = NoRegisteredConsumersException.class)
-    public void pushMessageToConsumer_consumerNotPresent_shouldThrowNoRegisteredConsumersException() {
+    public void pushMessageToConsumer_consumerNotPresent_shouldThrowNoRegisteredConsumersException() throws Throwable {
         when(consumers.size()).thenReturn(0);
 
-        brokerService.pushMessageToConsumer();
+        Method method = BrokerService.class.getDeclaredMethod("pushMessageToConsumer");
+        method.setAccessible(true);
+        try {
+            method.invoke(brokerService);
+        } catch (InvocationTargetException ite) {
+            throw ite.getCause();
+        }
+
+
     }
 
     @Test(expected = NoMessagesPresentAtBrokerException.class)
-    public void pushMessageToConsumer_consumerPresent_repositoryThrowsException_shouldThrowNoMessagesPresentAtBrokerException() {
+    public void pushMessageToConsumer_consumerPresent_repositoryThrowsException_shouldThrowNoMessagesPresentAtBrokerException() throws Throwable {
         SubscribeConsumerMessage subscribeConsumerMessage = new SubscribeConsumerMessage();
         subscribeConsumerMessage.setConsumerId("1");
         subscribeConsumerMessage.setHealthcheckEndpoint("http://localhost:8081/healthcheck");
@@ -147,11 +162,18 @@ public class BrokerServiceTest {
         when(consumers.get(anyInt())).thenReturn(subscribeConsumerMessage);
         when(brokerRepository.getFirstUnprocessedMessage("1")).thenThrow(EmptyResultDataAccessException.class);
 
-        brokerService.pushMessageToConsumer();
+        Method method = BrokerService.class.getDeclaredMethod("pushMessageToConsumer");
+        method.setAccessible(true);
+        try {
+            method.invoke(brokerService);
+        } catch (InvocationTargetException ite) {
+            throw ite.getCause();
+        }
+
     }
 
     @Test
-    public void pushMessageToConsumer_consumerConnectionRefused_shoudRemoveConsumer() {
+    public void pushMessageToConsumer_consumerConnectionRefused_shoudRemoveConsumer() throws Throwable {
         SubscribeConsumerMessage subscribeConsumerMessage = new SubscribeConsumerMessage();
         subscribeConsumerMessage.setConsumerId("1");
         subscribeConsumerMessage.setHealthcheckEndpoint("http://localhost:8081/healthcheck");
@@ -169,7 +191,13 @@ public class BrokerServiceTest {
         when(brokerRepository.getFirstUnprocessedMessage("1")).thenReturn(messageEntity);
         when(restTemplate.postForEntity(subscribeConsumerMessage.getPushEndpoint(), messageEntity.toConsumerMessage(), Void.class)).thenThrow(RestClientException.class);
 
-        brokerService.pushMessageToConsumer();
+        Method method = BrokerService.class.getDeclaredMethod("pushMessageToConsumer");
+        method.setAccessible(true);
+        try {
+            method.invoke(brokerService);
+        } catch (InvocationTargetException ite) {
+            throw ite.getCause();
+        }
 
         verify(consumers, times(2)).size();
         verify(consumers, times(1)).get(anyInt());

@@ -13,5 +13,3 @@ public class App {
     }
 
 }
-
-// TODO (filip): Try implementing a consumer in Node.js

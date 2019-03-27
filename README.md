@@ -52,7 +52,7 @@ In order to be able to build the project, the following dependencies are require
 * Java 8
 * Maven 3
 * PostgreSQL
-* Docker
+* Docker (work in progress)
 
 ## Build
 

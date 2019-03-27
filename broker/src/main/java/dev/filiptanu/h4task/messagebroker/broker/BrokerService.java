@@ -73,7 +73,7 @@ public class BrokerService {
         }
     }
 
-    public void pushMessageToConsumer() {
+    private void pushMessageToConsumer() {
         logger.info("Pushing a message to a consumer...");
 
         SubscribeConsumerMessage subscribeConsumerMessage = getNextConsumer();

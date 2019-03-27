@@ -17,7 +17,6 @@ public class Config {
         return builder.build();
     }
 
-    // TODO (filip): Maybe use Map instead, for easy removal of consumers
     @Bean
     public List<SubscribeConsumerMessage> getConsumers() {
         return Collections.synchronizedList(new ArrayList<>());
