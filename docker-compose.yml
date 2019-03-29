@@ -1,0 +1,77 @@
+version: '3'
+
+networks:
+  broker-network:
+
+services:
+  message-broker-postgres:
+    environment:
+      - POSTGRES_USER=message-broker
+      - POSTGRES_PASSWORD=message-broker-password
+    ports:
+      - "5432:5432"
+    networks:
+      - broker-network
+    image: postgres:latest
+
+  broker:
+    environment:
+      - spring.datasource.url=jdbc:postgresql://message-broker-postgres:5432/message-broker
+    networks:
+      - broker-network
+    image: h4-task-message-broker/broker:1.0-SNAPSHOT
+    depends_on:
+      - message-broker-postgres
+
+  producer-1:
+    environment:
+      - producer.id=1
+      - broker.produce.message.endpoint=http://broker:8080/receiveProducerMessage
+    networks:
+      - broker-network
+    image: h4-task-message-broker/producer:1.0-SNAPSHOT
+    depends_on:
+      - broker
+  producer-2:
+    environment:
+      - producer.id=2
+      - broker.produce.message.endpoint=http://broker:8080/receiveProducerMessage
+    networks:
+      - broker-network
+    image: h4-task-message-broker/producer:1.0-SNAPSHOT
+    depends_on:
+      - broker
+
+  consumer-pull-1:
+    environment:
+      - consumer.id=1
+      - broker.subscribe.endpoint=http://broker:8080/subscribe
+      - broker.confirm.message.endpoint=http://broker:8080/confirmMessage
+    networks:
+      - broker-network
+    image: h4-task-message-broker/consumer-push:1.0-SNAPSHOT
+    depends_on:
+      - broker
+  consumer-pull-2:
+    environment:
+      - consumer.id=2
+      - server.port=8082
+      - broker.subscribe.endpoint=http://broker:8080/subscribe
+      - broker.confirm.message.endpoint=http://broker:8080/confirmMessage
+    networks:
+      - broker-network
+    image: h4-task-message-broker/consumer-push:1.0-SNAPSHOT
+    depends_on:
+      - broker
+  consumer-pull-3:
+    environment:
+      - consumer.id=3
+      - server.port=8083
+      - confirm.messages=false
+      - broker.subscribe.endpoint=http://broker:8080/subscribe
+      - broker.confirm.message.endpoint=http://broker:8080/confirmMessage
+    networks:
+      - broker-network
+    image: h4-task-message-broker/consumer-push:1.0-SNAPSHOT
+    depends_on:
+      - broker

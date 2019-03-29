@@ -1,4 +1,3 @@
 FROM openjdk:8-jdk-alpine
-VOLUME /tmp
-COPY target/*.jar producer.jar
-ENTRYPOINT ["java", "-jar", "/producer.jar", "-Dproducer.id=1"]
+COPY target/producer-1.0-SNAPSHOT.jar producer.jar
+ENTRYPOINT ["java", "-jar", "/producer.jar"]

@@ -4,6 +4,7 @@ import static dev.filiptanu.h4task.messagebroker.consumer.push.Config.HEALTHCHEC
 import static dev.filiptanu.h4task.messagebroker.consumer.push.Config.PUSH_CONSUMER_MESSAGE_ENDPOINT;
 
 import java.net.InetAddress;
+import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,13 +33,14 @@ public class SubscribeService {
     private String brokerSubscribeEndpoint;
 
     @EventListener(ApplicationReadyEvent.class)
+    @SneakyThrows
     public void subscribeAtBroker() {
         logger.info("Subscribing at broker...");
 
-        String inetAddress = InetAddress.getLoopbackAddress().getHostAddress();
+        String hostName = InetAddress.getLocalHost().getHostName();
 
-        String healthcheckEndpoint = "http://" + inetAddress + ":" + serverPort + HEALTHCHECK_ENDPOINT;
-        String pushEndpoint = "http://" + inetAddress + ":" + serverPort + PUSH_CONSUMER_MESSAGE_ENDPOINT;
+        String healthcheckEndpoint = "http://" + hostName + ":" + serverPort + HEALTHCHECK_ENDPOINT;
+        String pushEndpoint = "http://" + hostName + ":" + serverPort + PUSH_CONSUMER_MESSAGE_ENDPOINT;
 
         SubscribeConsumerMessage subscribeConsumerMessage = new SubscribeConsumerMessage();
         subscribeConsumerMessage.setConsumerId(consumerId);

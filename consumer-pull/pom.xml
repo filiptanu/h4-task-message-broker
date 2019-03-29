@@ -64,6 +64,7 @@
                 </executions>
                 <configuration>
                     <repository>${docker.image.prefix}/consumer-pull</repository>
+                    <tag>${project.version}</tag>
                 </configuration>
             </plugin>
         </plugins>

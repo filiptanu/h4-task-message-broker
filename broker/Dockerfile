@@ -1,4 +1,3 @@
 FROM openjdk:8-jdk-alpine
-VOLUME /tmp
-COPY target/*.jar broker.jar
+COPY target/broker-1.0-SNAPSHOT.jar broker.jar
 ENTRYPOINT ["java", "-jar", "/broker.jar"]

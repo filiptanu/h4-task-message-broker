@@ -52,27 +52,23 @@ In order to be able to build the project, the following dependencies are require
 * Java 8
 * Maven 3
 * PostgreSQL
-* Docker (work in progress)
+* Docker
 
 ## Build
 
-Navigate to the project root directory and run the following command to build the project:
+In a terminal, navigate to the project root directory and run the following command to build the project:
 
 ```
 mvn clean install
 ```
 
-The above command will download any project dependencies, run tests, build the modules' artifacts and build docker images for every module.
+The above command will download any project dependencies, run tests, build the modules' artifacts and build Docker images for every module.
+
+Note that in order for the above command to build the Docker images, the current user needs to have permissions to run Docker withoud ```sudo```.
 
 ## Deployment
 
 Before running any of the built artifacts you need to have PostgreSQL up and running.
-
-If you have Docker installed, you can run a PostgreSQL container with the following command:
-
-```
-docker run --name message-broker-postgres -e POSTGRES_USER=message-broker -e POSTGRES_PASSWORD=message-broker-password -p 5432:5432 -d postgres
-```
 
 The following sections will explain how to run the separate modules.
 
@@ -174,6 +170,44 @@ java -jar consumer-push/target/consumer-push-1.0-SNAPSHOT.jar -Dconsumer.id=2 -D
 java -jar consumer-push/target/consumer-push-1.0-SNAPSHOT.jar -Dconsumer.id=3 -Dserver.port=8083 -Dconfirm.messages=false
 ```
 
-##### TODO (filip): Finish the Docker setup
+## Deployment with Docker
+
+When building the project with Maven, Docker images are automatically created and stored locally.
+
+You can view the Docker images using the following command:
+
+```
+docker image ls
+```
+
+The following Docker images should be listed:
+
+* h4-task-message-broker/broker
+* h4-task-message-broker/producer
+* h4-task-message-broker/consumer-pull
+* h4-task-message-broker/consumer-push
+
+### Example of a deployment (using Docker) of a broker, 2 producers and 3 push-based consumers
+
+```
+docker network create broker-network
+
+docker run --name message-broker-postgres -e POSTGRES_USER=message-broker -e POSTGRES_PASSWORD=message-broker-password -p 5432:5432 --network broker-network -d postgres:latest
+
+docker run --name broker --network broker-network -e spring.datasource.url=jdbc:postgresql://message-broker-postgres:5432/message-broker h4-task-message-broker/broker:1.0-SNAPSHOT
+docker run --name producer-1 --network broker-network -e producer.id=1 -e broker.produce.message.endpoint=http://broker:8080/receiveProducerMessage h4-task-message-broker/producer:1.0-SNAPSHOT
+docker run --name producer-2 --network broker-network -e producer.id=2 -e time.interval.milliseconds=3000 -e broker.produce.message.endpoint=http://broker:8080/receiveProducerMessage h4-task-message-broker/producer:1.0-SNAPSHOT
+docker run --name consumer-push-1 --network broker-network -e consumer.id=1 -e broker.subscribe.endpoint=http://broker:8080/subscribe -e broker.confirm.message.endpoint=http://broker:8080/confirmMessage h4-task-message-broker/consumer-push:1.0-SNAPSHOT
+docker run --name consumer-push-2 --network broker-network -e consumer.id=2 -e server.port=8082 -e broker.subscribe.endpoint=http://broker:8080/subscribe -e broker.confirm.message.endpoint=http://broker:8080/confirmMessage h4-task-message-broker/consumer-push:1.0-SNAPSHOT
+docker run --name consumer-push-3 --network broker-network -e consumer.id=3 -e server.port=8083 -e confirm.messages=false -e broker.subscribe.endpoint=http://broker:8080/subscribe -e broker.confirm.message.endpoint=http://broker:8080/confirmMessage h4-task-message-broker/consumer-push:1.0-SNAPSHOT
+```
+
+## Deployment with Docker Compose
+
+If you have Docker Compose installed, you can run the previous setup with the following command:
+
+```
+docker-compose up
+```
 
 ##### TODO (filip): Write a push-based consumer in Node.js
