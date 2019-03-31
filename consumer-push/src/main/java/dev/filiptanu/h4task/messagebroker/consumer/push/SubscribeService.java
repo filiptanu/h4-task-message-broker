@@ -52,6 +52,7 @@ public class SubscribeService {
             logger.info("Successfully registered at broker...");
         } else {
             logger.error("There was a problem with registering at the broker... Shutting down the consumer...");
+            System.exit(-1);
         }
     }
 

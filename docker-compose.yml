@@ -42,7 +42,7 @@ services:
     depends_on:
       - broker
 
-  consumer-pull-1:
+  consumer-push-1:
     environment:
       - consumer.id=1
       - broker.subscribe.endpoint=http://broker:8080/subscribe
@@ -52,7 +52,7 @@ services:
     image: h4-task-message-broker/consumer-push:1.0-SNAPSHOT
     depends_on:
       - broker
-  consumer-pull-2:
+  consumer-push-2:
     environment:
       - consumer.id=2
       - server.port=8082
@@ -63,7 +63,7 @@ services:
     image: h4-task-message-broker/consumer-push:1.0-SNAPSHOT
     depends_on:
       - broker
-  consumer-pull-3:
+  consumer-push-3:
     environment:
       - consumer.id=3
       - server.port=8083
@@ -73,5 +73,16 @@ services:
     networks:
       - broker-network
     image: h4-task-message-broker/consumer-push:1.0-SNAPSHOT
+    depends_on:
+      - broker
+  consumer-push-node-1:
+    environment:
+      - CONSUMER_ID=4
+      - PORT=8084
+      - BROKER_SUBSCRIBE_ENDPOINT=http://broker:8080/subscribe
+      - BROKER_CONFIRM_MESSAGE_ENDPOINT=http://broker:8080/confirmMessage
+    networks:
+      - broker-network
+    image: h4-task-message-broker/consumer-push-node:1.0-SNAPSHOT
     depends_on:
       - broker

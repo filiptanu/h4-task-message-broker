@@ -14,6 +14,7 @@
         <module>producer</module>
         <module>consumer-pull</module>
         <module>consumer-push</module>
+        <module>consumer-push-node</module>
     </modules>
 
     <properties>

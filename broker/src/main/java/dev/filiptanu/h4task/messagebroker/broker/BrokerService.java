@@ -85,13 +85,16 @@ public class BrokerService {
             logger.info("Consumer: " + subscribeConsumerMessage);
             logger.info("Message: " + consumerMessage);
 
-            try {
-                restTemplate.postForEntity(subscribeConsumerMessage.getPushEndpoint(), consumerMessageOptional.get(), Void.class);
-            } catch (RestClientException e) {
-                logger.error("Communicating with the consumer with id: " + subscribeConsumerMessage.getConsumerId() + " failed: " + e.getMessage());
+            Runnable pushMessageThread = () -> {
+                try {
+                    restTemplate.postForEntity(subscribeConsumerMessage.getPushEndpoint(), consumerMessageOptional.get(), Void.class);
+                } catch (RestClientException e) {
+                    logger.error("Communicating with the consumer with id: " + subscribeConsumerMessage.getConsumerId() + " failed: " + e.getMessage());
 
-                removeConsumer(subscribeConsumerMessage);
-            }
+                    removeConsumer(subscribeConsumerMessage);
+                }
+            };
+            pushMessageThread.run();
         } else {
             decrementConsumerIndex();
             throw new NoMessagesPresentAtBrokerException("No more messages currently present at the broker...");

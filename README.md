@@ -9,6 +9,7 @@ The project contains the following modules:
 * producer
 * consumer-pull
 * consumer-push
+* consumer-push-node
 
 ### core
 
@@ -45,14 +46,19 @@ A pull-based consumer will ask the broker for new messages at a regular interval
 
 A push-based consumer will subscribe to the broker, and the broker will push any message it receives to the subscribed consumers in a Round-robin fashion.
 
+### consumer-push-node
+
+A Node.js implementation of a push-based consumer.
+
 ## Prerequisites
 
 In order to be able to build the project, the following dependencies are required to be installed:
 
 * Java 8
 * Maven 3
-* PostgreSQL
 * Docker
+* PostgreSQL (if you do want to run the project without Docker)
+* Node.js (if you do want to run the project without Docker)
 
 ## Build
 
@@ -65,6 +71,13 @@ mvn clean install
 The above command will download any project dependencies, run tests, build the modules' artifacts and build Docker images for every module.
 
 Note that in order for the above command to build the Docker images, the current user needs to have permissions to run Docker withoud ```sudo```.
+
+To build the ```consumer-push-node``` module (without using Docker), run the following commands:
+
+```
+cd consumer-push-node
+npm install
+```
 
 ## Deployment
 
@@ -157,7 +170,23 @@ You can use the following JVM arguments when running a push-based consumer:
 * broker.confirm.message.endpoint - an endpoint on which this consumer will confirm messages it received to the broker
 * confirm.messages - a flag controlling whether or not this consumer will confirm the messages it receives to the broker
 
-### Example of a deployment of a broker, 2 producers and 3 push-based consumers
+#### consumer-push-node
+
+You can run a push-based consumer implemented in node with the following command:
+
+```
+cd consumer-push-node && CONSUMER_ID=1 npm start
+```
+
+You can use the following environment variables when running a push-based consumer:
+
+* PORT - the server port on which this consumer will listen for healthchecks or pushed messages
+* CONSUMER_ID - this consumer's id (mandatory)
+* BROKER_SUBSCRIBE_ENDPOINT - an endpoint on which this consumer will subscribe to the broker
+* BROKER_CONFIRM_MESSAGE_ENDPOINT - an endpoint on which this consumer will confirm messages it received to the broker
+* CONFIRM_MESSAGES - a flag controlling whether or not this consumer will confirm the messages it receives to the broker
+
+### Example of a deployment of a broker, 2 producers and 4 push-based consumers
 
 Run each command in a separate terminal to see the output of the interactions between the components.
 
@@ -168,6 +197,7 @@ java -jar producer/target/producer-1.0-SNAPSHOT.jar -Dproducer.id=2 -Dtime.inter
 java -jar consumer-push/target/consumer-push-1.0-SNAPSHOT.jar -Dconsumer.id=1
 java -jar consumer-push/target/consumer-push-1.0-SNAPSHOT.jar -Dconsumer.id=2 -Dserver.port=8082
 java -jar consumer-push/target/consumer-push-1.0-SNAPSHOT.jar -Dconsumer.id=3 -Dserver.port=8083 -Dconfirm.messages=false
+cd consumer-push-node && PORT=8084 CONSUMER_ID=4 BROKER_SUBSCRIBE_ENDPOINT=http://localhost:8080/subscribe BROKER_CONFIRM_MESSAGE_ENDPOINT=http://localhost:8080/confirmMessage npm start
 ```
 
 ## Deployment with Docker
@@ -186,8 +216,9 @@ The following Docker images should be listed:
 * h4-task-message-broker/producer
 * h4-task-message-broker/consumer-pull
 * h4-task-message-broker/consumer-push
+* h4-task-message-broker/consumer-push-node
 
-### Example of a deployment (using Docker) of a broker, 2 producers and 3 push-based consumers
+### Example of a deployment (using Docker) of a broker, 2 producers and 4 push-based consumers
 
 ```
 docker network create broker-network
@@ -200,6 +231,7 @@ docker run --name producer-2 --network broker-network -e producer.id=2 -e time.i
 docker run --name consumer-push-1 --network broker-network -e consumer.id=1 -e broker.subscribe.endpoint=http://broker:8080/subscribe -e broker.confirm.message.endpoint=http://broker:8080/confirmMessage h4-task-message-broker/consumer-push:1.0-SNAPSHOT
 docker run --name consumer-push-2 --network broker-network -e consumer.id=2 -e server.port=8082 -e broker.subscribe.endpoint=http://broker:8080/subscribe -e broker.confirm.message.endpoint=http://broker:8080/confirmMessage h4-task-message-broker/consumer-push:1.0-SNAPSHOT
 docker run --name consumer-push-3 --network broker-network -e consumer.id=3 -e server.port=8083 -e confirm.messages=false -e broker.subscribe.endpoint=http://broker:8080/subscribe -e broker.confirm.message.endpoint=http://broker:8080/confirmMessage h4-task-message-broker/consumer-push:1.0-SNAPSHOT
+docker run --name consumer-push-node-1 --network broker-network -e CONSUMER_ID=4 -e PORT=8084 -e BROKER_SUBSCRIBE_ENDPOINT=http://broker:8080/subscribe -e BROKER_CONFIRM_MESSAGE_ENDPOINT=http://broker:8080/confirmMessage h4-task-message-broker/consumer-push-node:1.0-SNAPSHOT
 ```
 
 ## Deployment with Docker Compose
@@ -209,5 +241,3 @@ If you have Docker Compose installed, you can run the previous setup with the fo
 ```
 docker-compose up
 ```
-
-##### TODO (filip): Write a push-based consumer in Node.js

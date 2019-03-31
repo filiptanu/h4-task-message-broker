@@ -1,0 +1,21 @@
+{
+  "name": "consumer-push-node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "express": "^4.16.4",
+    "nodemon": "^1.18.10",
+    "request": "^2.88.0"
+  },
+  "devDependencies": {
+    "eslint": "^5.16.0"
+  }
+}
