@@ -56,9 +56,9 @@ In order to be able to build the project, the following dependencies are require
 
 * Java 8
 * Maven 3
+* PostgreSQL
 * Docker
-* PostgreSQL (if you do want to run the project without Docker)
-* Node.js (if you do want to run the project without Docker)
+* Node.js
 
 ## Build
 
@@ -197,7 +197,7 @@ java -jar producer/target/producer-1.0-SNAPSHOT.jar -Dproducer.id=2 -Dtime.inter
 java -jar consumer-push/target/consumer-push-1.0-SNAPSHOT.jar -Dconsumer.id=1
 java -jar consumer-push/target/consumer-push-1.0-SNAPSHOT.jar -Dconsumer.id=2 -Dserver.port=8082
 java -jar consumer-push/target/consumer-push-1.0-SNAPSHOT.jar -Dconsumer.id=3 -Dserver.port=8083 -Dconfirm.messages=false
-cd consumer-push-node && PORT=8084 CONSUMER_ID=4 BROKER_SUBSCRIBE_ENDPOINT=http://localhost:8080/subscribe BROKER_CONFIRM_MESSAGE_ENDPOINT=http://localhost:8080/confirmMessage npm start
+cd consumer-push-node && PORT=8084 CONSUMER_ID=4 npm start
 ```
 
 ## Deployment with Docker
